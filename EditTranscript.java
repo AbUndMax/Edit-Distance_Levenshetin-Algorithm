@@ -1,18 +1,7 @@
-/**
- * Please dont grade this! This is what we tried and what did not work due to some smaller debug problems in the end that we couldt fix in time
- 
- Assignment 01 - Task 03
- */
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.SortedMap;
 
 public class EditTranscript {
-    /**
-     * Adjust your names here:
-     */
-    private static final String studentNameA = "Sophia Gaupp";
-    private static final String studentNameB = "Niklas Gerbes";
     private static boolean verboseMode = false;
 
     /**
@@ -57,6 +46,23 @@ public class EditTranscript {
             }
             return 'E';
         }
+
+        public String getArrowType() {
+            switch(this) {
+                case Diagonal_Match:
+                    return " ↖︎ ";
+
+                case Diagonal_Missmatch:
+                    return "(↖︎)";
+
+                case Left:
+                    return " ← ";
+
+                case Top:
+                    return " ↑ ";
+            }
+            return "E";
+        }
     }
 
     /**
@@ -77,68 +83,88 @@ public class EditTranscript {
         int[][] scoreMatrix = initializeScoreMatrix(numberOfRows, numberOfCols);
         int[][][] tracebackMatrix = initializeTracebackMatrix(numberOfRows, numberOfCols); //warum hier drei mal []? --> erstes: i position, 2.: j Position ; 3.: woher kommt man als eigener array
         char[][] editTypeMatrix = initializeTypeMatrix(numberOfRows, numberOfCols);
+        String[][] arrowMatrix = initializeArrowMatrix(numberOfRows, numberOfCols);
         
         for (int i = 1; i < numberOfRows; i++) {
             for (int j = 1; j < numberOfCols; j++) {
 
                 //TODO: Debug lines entfernen
-                int delta_i_j = calculateDelta_i_j(i, sequence1, j, sequence2); // delta is hier erstmal entweder 0 (Identisch) oder 1 (nicht Identisch)
-                if (verboseMode) System.out.println("\ndelta:" + delta_i_j);
+                int delta_i_j = calculateDelta_i_j(i, sequence1, j, sequence2);
                 // first compute from which direction the score is derived (traceback)
                 // then use this output as input for next function to calculate score!
                 tracebackDirection direction = getTraceback(scoreMatrix, i, j, delta_i_j);
-                if (verboseMode) System.out.println(direction);
 
                 scoreMatrix[i][j] = computeScoreOfPrefix(scoreMatrix, i, j, direction);
-                if (verboseMode) System.out.print("score to write in matrix: ");
-                if (verboseMode) System.out.println(computeScoreOfPrefix(scoreMatrix, i, j, direction));
                 tracebackMatrix[i][j] = computeTracebackCoordinate(direction, i, j);
                 editTypeMatrix[i][j] = direction.getOperationType();
+                arrowMatrix[i][j] = direction.getArrowType();
             }
         }
 
-        printMatrices(scoreMatrix, tracebackMatrix, editTypeMatrix);
+        if (verboseMode) printMatrices(scoreMatrix, tracebackMatrix, editTypeMatrix, arrowMatrix);
 
         return traceBack(tracebackMatrix, editTypeMatrix, numberOfRows, numberOfCols);
     }
 
+    /**
+     * This Function uses the Traceback matrix to read through the operation type matrix which kind of operation should
+     * be added to the growing edit transcript string
+     * @param traceBackMatrix matrix which holds the traceback coordinates
+     * @param editTypeMatrix matrix which holds the edit type at position i, j
+     * @param numberOfRows length of sequence1 + 1
+     * @param numberOfCols length of sequence2 + 1
+     * @return edit transcript String
+     */
     private static String traceBack(int[][][] traceBackMatrix, char[][] editTypeMatrix, int numberOfRows, int numberOfCols) {
         StringBuilder reverseEditTranscript = new StringBuilder();
 
         int[] nextIndex = new int[]{numberOfRows - 1, numberOfCols - 1};
-        System.out.println(("init index:" + Arrays.toString(nextIndex)));
-        System.out.println("inti append: " + editTypeMatrix[nextIndex[0]][nextIndex[1]]);
-        reverseEditTranscript.append(editTypeMatrix[nextIndex[0]][nextIndex[1]]);
-        System.out.println(Arrays.toString(traceBackMatrix[numberOfRows - 1][numberOfCols - 1]));
-        do {
-            nextIndex = traceBackMatrix[nextIndex[0]][nextIndex[1]];
-            System.out.println("next index: " + Arrays.toString(nextIndex));
-            System.out.println("append: " + editTypeMatrix[nextIndex[0]][nextIndex[1]]);
+
+        while (! (nextIndex[0] == 0 && nextIndex[1] == 0)) {
             reverseEditTranscript.append(editTypeMatrix[nextIndex[0]][nextIndex[1]]);
-        } while (nextIndex[0] != 0 && nextIndex[1] != 0);
+            nextIndex = traceBackMatrix[nextIndex[0]][nextIndex[1]];
+        }
 
         return reverseEditTranscript.reverse().toString();
     }
 
-    private static void printMatrices(int[][] matrix, int[][][] matrix2, char[][] matrix3) {
-        //TODO: remove printouts
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                System.out.print(matrix[i][j] + " ");
+    /**
+     * simple sout function to print all matrices to the console
+     * @param scoreMatrix the scoreMatrix
+     * @param tracebackMatrix the traceBackMatrix
+     * @param editTypeMatrix the editTypeMatrix
+     * @param arrowMatrix the arrowMatrix
+     */
+    private static void printMatrices(int[][] scoreMatrix, int[][][] tracebackMatrix, char[][] editTypeMatrix, String[][] arrowMatrix) {
+
+        System.out.println("\n#### scoreMatrix:");
+        for (int i = 0; i < scoreMatrix.length; i++) {
+            for (int j = 0; j < scoreMatrix[i].length; j++) {
+                System.out.print(scoreMatrix[i][j] + " ");
             }
             System.out.println();
         }
 
-        for (int i = 0; i < matrix2.length; i++) {
-            for (int j = 0; j < matrix2[i].length; j++) {
-                System.out.print(Arrays.toString(matrix2[i][j]) + " ");
+        System.out.println("\n#### traceBackMatrix:");
+        for (int i = 0; i < tracebackMatrix.length; i++) {
+            for (int j = 0; j < tracebackMatrix[i].length; j++) {
+                System.out.print(Arrays.toString(tracebackMatrix[i][j]) + " ");
             }
             System.out.println();
         }
 
-        for (int i = 0; i < matrix3.length; i++) {
-            for (int j = 0; j < matrix3[i].length; j++) {
-                System.out.print(matrix3[i][j] + " ");
+        System.out.println("\n#### editTypeMatrix:");
+        for (int i = 0; i < editTypeMatrix.length; i++) {
+            for (int j = 0; j < editTypeMatrix[i].length; j++) {
+                System.out.print(editTypeMatrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("\n#### arrowMatrix:");
+        for (int i = 0; i < arrowMatrix.length; i++) {
+            for (int j = 0; j < arrowMatrix[i].length; j++) {
+                System.out.print(arrowMatrix[i][j] + " ");
             }
             System.out.println();
         }
@@ -193,8 +219,8 @@ public class EditTranscript {
      * @return an initialized tracebackMatrix with entries of pattern [i, j] as coordinates.
      */
     private static int[][][] initializeTracebackMatrix(int numberOfRows, int numberOfCols) {
-        int[][][] traceBackMatrix = new int[numberOfRows][numberOfCols][2];     // +1 weil 0 eingefügt werden muss an Position 1 in row/column
-                                                                                        // [2] weil array zwei Positionen für traceback abspeichert (woher kommt man). s. oben zusätzlich zu Position i und j
+        int[][][] traceBackMatrix = new int[numberOfRows][numberOfCols][2];
+
         traceBackMatrix[0][0] = new int[]{0, 0};
 
         // initialize first row from cell by cell starting with 0, incrementing by 1
@@ -212,13 +238,17 @@ public class EditTranscript {
         return traceBackMatrix;
     }
 
+    /**
+     * This function initializes a TypeMatrix
+     * @param numberOfRows length of sequence1 + 1
+     * @param numberOfCols length of sequence2 + 1
+     * @return initialized matrix
+     */
     private static char[][] initializeTypeMatrix(int numberOfRows, int numberOfCols) {
         char[][] initializedMatrix = new char[numberOfRows][numberOfCols];
 
         // initialize first row from cell by cell starting with 0, incrementing by 1
-        for (int j = 0; j < initializedMatrix[0].length; j++) {
-            initializedMatrix[0][j] = 'I';
-        }
+        Arrays.fill(initializedMatrix[0], 'I');
 
         // initialize each first entry in each row starting with 0, incrementing by 1
         for (int i = 1; i < initializedMatrix.length; i++) {
@@ -226,6 +256,20 @@ public class EditTranscript {
         }
 
         return initializedMatrix; 
+    }
+
+    private static String[][] initializeArrowMatrix(int numberOfRows, int numberOfCols) {
+        String[][] initializedMatrix = new String[numberOfRows][numberOfCols];
+
+        // initialize first row from cell by cell starting with 0, incrementing by 1
+        Arrays.fill(initializedMatrix[0], " ← ");
+
+        // initialize each first entry in each row starting with 0, incrementing by 1
+        for (int i = 1; i < initializedMatrix.length; i++) {
+            initializedMatrix[i][0] = " ↑ ";
+        }
+
+        return initializedMatrix;
     }
 
     /**
@@ -243,8 +287,9 @@ public class EditTranscript {
 
         //TODO: DEBUG lines entfernen
         if (verboseMode) {
-            System.out.println("current index:");
+            System.out.print("\ncurrent index: ");
             System.out.print(current_i);
+            System.out.print(" ");
             System.out.println(current_j);
             System.out.print("scoreAbove: ");
             System.out.println(scoreAbove);
@@ -253,13 +298,16 @@ public class EditTranscript {
             System.out.print("score diag: ");
             System.out.println(scoreDiagonal);
         }
-        
 
-        if (scoreDiagonal <= scoreAbove && scoreDiagonal <= scoreLeft && delta_i_j > 0) return tracebackDirection.Diagonal_Missmatch;
-        else if (scoreDiagonal <= scoreAbove && scoreDiagonal <= scoreLeft && delta_i_j == 0) return tracebackDirection.Diagonal_Match;
-        else if (scoreAbove <= scoreLeft && scoreAbove <= scoreDiagonal) return tracebackDirection.Top;
-        else return tracebackDirection.Left;
-        //if (scoreLeft < scoreAbove && scoreLeft < scoreDiagonal)
+        tracebackDirection direction;
+
+        if (scoreDiagonal <= scoreAbove && scoreDiagonal <= scoreLeft && delta_i_j > 0) direction = tracebackDirection.Diagonal_Missmatch;
+        else if (scoreDiagonal <= scoreAbove && scoreDiagonal <= scoreLeft && delta_i_j == 0) direction = tracebackDirection.Diagonal_Match;
+        else if (scoreAbove <= scoreLeft && scoreAbove <= scoreDiagonal) direction = tracebackDirection.Top;
+        else direction = tracebackDirection.Left;
+
+        if (verboseMode) System.out.println("traceback to write: " + direction.getOperationType());
+        return direction;
     }
 
     /**
@@ -305,36 +353,36 @@ public class EditTranscript {
      * @return
      */
     private static int computeScoreOfPrefix(int[][] scoreMatrix, int current_i, int current_j, tracebackDirection direction) {
-        if (direction.isAbove()) return scoreMatrix[current_i - 1][current_j] + 1;
-        if (direction.isLeft()) return scoreMatrix[current_i][current_j - 1] + 1;
-        if (direction.isDiagonal_Match()) return scoreMatrix[current_i - 1][current_j - 1];
-        else return scoreMatrix[current_i - 1][current_j - 1] + 1;
+        int editDistance;
+        if (direction.isAbove()) editDistance = scoreMatrix[current_i - 1][current_j] + 1;
+        else if (direction.isLeft()) editDistance = scoreMatrix[current_i][current_j - 1] + 1;
+        else if (direction.isDiagonal_Match()) editDistance = scoreMatrix[current_i - 1][current_j - 1];
+        else editDistance = scoreMatrix[current_i - 1][current_j - 1] + 1;
+
+        if(verboseMode) System.out.println("edit Distance to write: " + editDistance);
+        return editDistance;
     }
 
     public static void main(String[] args) {
-        System.out.println("GBI - Assignment 1 Task 3 - " + studentNameA + ", " + studentNameB );
-
         String sequence1 = "";
         String sequence2 = "";
 
         try {
             sequence1 = args[0];
             sequence2 = args[1];
-
-
-            // Optional verbose Mode (more like debug mode XD)
-            try {
-                if (args[2] != null) verboseMode = true;
-            } catch (Exception e) {
-                verboseMode = false;
-            }
             
         } catch (Exception e) {
             System.out.println("<<<<<<! ERROR: please provide two sequences as arguments!");
         }
 
-        // TODO: Call all functions from here and organise the output.
-        System.out.println("edit transcirpt: " + computeEditTranscript(sequence1, sequence2));
+        // Optional verbose Mode (more like debug mode XD)
+        try {
+            if (args[2].equals("-v") || args[2].equals("--verbose")) verboseMode = true;
+        } catch (Exception e) {
+            verboseMode = false;
+        }
+
+        System.out.println("\n#### edit transcirpt:\n" + computeEditTranscript(sequence1, sequence2));
     }
 
 }
