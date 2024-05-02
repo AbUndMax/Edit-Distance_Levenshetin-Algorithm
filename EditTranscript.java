@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import java.util.SortedMap;
 
 public class EditTranscript {
     private static boolean verboseMode = false;
@@ -18,10 +17,6 @@ public class EditTranscript {
             return this == Diagonal_Match;
         }
 
-        public boolean isDiagonal_Missmatch() {
-            return this == Diagonal_Missmatch;
-        }
-
         public boolean isLeft() {
             return this == Left;
         }
@@ -31,52 +26,33 @@ public class EditTranscript {
         }
 
         public char getOperationType() {
-            switch(this) {
-                case Diagonal_Match:
-                    return 'M';
-                
-                case Diagonal_Missmatch:
-                    return 'R';
-
-                case Left:
-                    return 'I';
-
-                case Top:
-                    return 'D';
-            }
-            return 'E';
+            return switch (this) {
+                case Diagonal_Match -> 'M';
+                case Diagonal_Missmatch -> 'R';
+                case Left -> 'I';
+                case Top -> 'D';
+            };
         }
 
         public String getArrowType() {
-            switch(this) {
-                case Diagonal_Match:
-                    return " ↖︎ ";
-
-                case Diagonal_Missmatch:
-                    return "(↖︎)";
-
-                case Left:
-                    return " ← ";
-
-                case Top:
-                    return " ↑ ";
-            }
-            return "E";
+            return switch (this) {
+                case Diagonal_Match -> " ↖︎ ";
+                case Diagonal_Missmatch -> "(↖︎)";
+                case Left -> " ← ";
+                case Top -> " ↑ ";
+            };
         }
     }
 
     /**
      * Compute the edit transcript using Dynamic Programming
      * and Levenshtein-Algo (since we have full Sequence Alignment of two sequences):
-     *
      * d_edit(X, Y) = min{R(X, Y), I(X, Y), D(X, Y)}
-     *
      * @param sequence1 The first sequence
      * @param sequence2 The second sequence
      * @return The edit transcript
      */
     public static String computeEditTranscript(String sequence1, String sequence2){
-        String editTranscript = "";
         int numberOfRows = sequence1.length() + 1;
         int numberOfCols = sequence2.length() + 1;
 
@@ -138,33 +114,33 @@ public class EditTranscript {
     private static void printMatrices(int[][] scoreMatrix, int[][][] tracebackMatrix, char[][] editTypeMatrix, String[][] arrowMatrix) {
 
         System.out.println("\n#### scoreMatrix:");
-        for (int i = 0; i < scoreMatrix.length; i++) {
-            for (int j = 0; j < scoreMatrix[i].length; j++) {
-                System.out.print(scoreMatrix[i][j] + " ");
+        for (int[] matrix : scoreMatrix) {
+            for (int i : matrix) {
+                System.out.print(i + " ");
             }
             System.out.println();
         }
 
         System.out.println("\n#### traceBackMatrix:");
-        for (int i = 0; i < tracebackMatrix.length; i++) {
-            for (int j = 0; j < tracebackMatrix[i].length; j++) {
-                System.out.print(Arrays.toString(tracebackMatrix[i][j]) + " ");
+        for (int[][] matrix : tracebackMatrix) {
+            for (int[] ints : matrix) {
+                System.out.print(Arrays.toString(ints) + " ");
             }
             System.out.println();
         }
 
         System.out.println("\n#### editTypeMatrix:");
-        for (int i = 0; i < editTypeMatrix.length; i++) {
-            for (int j = 0; j < editTypeMatrix[i].length; j++) {
-                System.out.print(editTypeMatrix[i][j] + " ");
+        for (char[] typeMatrix : editTypeMatrix) {
+            for (char matrix : typeMatrix) {
+                System.out.print(matrix + " ");
             }
             System.out.println();
         }
 
         System.out.println("\n#### arrowMatrix:");
-        for (int i = 0; i < arrowMatrix.length; i++) {
-            for (int j = 0; j < arrowMatrix[i].length; j++) {
-                System.out.print(arrowMatrix[i][j] + " ");
+        for (String[] matrix : arrowMatrix) {
+            for (String s : matrix) {
+                System.out.print(s + " ");
             }
             System.out.println();
         }
@@ -350,7 +326,7 @@ public class EditTranscript {
      * @param current_i the current index of row
      * @param current_j the current index of col
      * @param direction the direction from which the edit distance should be computed
-     * @return
+     * @return editDistance at position i, j
      */
     private static int computeScoreOfPrefix(int[][] scoreMatrix, int current_i, int current_j, tracebackDirection direction) {
         int editDistance;
