@@ -1,13 +1,13 @@
 import java.util.Arrays;
 
 public class EditTranscript {
-    private static boolean verboseMode = false;
+    public static boolean verboseMode = false;
 
     /**
      * Interp. as direction from which the edit Distance at i, j is derived from!
      * Declare and initialize variables.
      */
-    private enum tracebackDirection {
+    public enum tracebackDirection {
         Diagonal_Match,
         Diagonal_Missmatch,
         Left,
@@ -91,7 +91,7 @@ public class EditTranscript {
      * @param numberOfCols length of sequence2 + 1
      * @return edit transcript String
      */
-    private static String traceBack(int[][][] traceBackMatrix, char[][] editTypeMatrix, int numberOfRows, int numberOfCols) {
+    public static String traceBack(int[][][] traceBackMatrix, char[][] editTypeMatrix, int numberOfRows, int numberOfCols) {
         StringBuilder reverseEditTranscript = new StringBuilder();
 
         int[] nextIndex = new int[]{numberOfRows - 1, numberOfCols - 1};
@@ -111,7 +111,7 @@ public class EditTranscript {
      * @param editTypeMatrix the editTypeMatrix
      * @param arrowMatrix the arrowMatrix
      */
-    private static void printMatrices(int[][] scoreMatrix, int[][][] tracebackMatrix, char[][] editTypeMatrix, String[][] arrowMatrix) {
+    public static void printMatrices(int[][] scoreMatrix, int[][][] tracebackMatrix, char[][] editTypeMatrix, String[][] arrowMatrix) {
 
         System.out.println("\n#### scoreMatrix:");
         for (int[] matrix : scoreMatrix) {
@@ -154,7 +154,7 @@ public class EditTranscript {
      * @param sequence2 String of sequence 2
      * @return either 0 if char at i of seq1 and j of seq2 are identical else 1
      */
-    private static int calculateDelta_i_j(int current_i, String sequence1, int current_j, String sequence2) {
+    public static int calculateDelta_i_j(int current_i, String sequence1, int current_j, String sequence2) {
         // we have to decrement the index by 1 since the matrix has one more row and col than the strings
         // (they are coming from the initialization of the scoreMatrix)
         char sequence1CharAt_i = sequence1.charAt(current_i - 1);
@@ -171,7 +171,7 @@ public class EditTranscript {
      * @param numberOfCols length of sequence2 + 1
      * @return int[][] an initialized score matrix
      */
-    private static int[][] initializeScoreMatrix(int numberOfRows, int numberOfCols) {
+    public static int[][] initializeScoreMatrix(int numberOfRows, int numberOfCols) {
 
         int[][] initializedMatrix = new int[numberOfRows][numberOfCols];
 
@@ -194,7 +194,7 @@ public class EditTranscript {
      * @param numberOfCols length of sequence2 + 1
      * @return an initialized tracebackMatrix with entries of pattern [i, j] as coordinates.
      */
-    private static int[][][] initializeTracebackMatrix(int numberOfRows, int numberOfCols) {
+    public static int[][][] initializeTracebackMatrix(int numberOfRows, int numberOfCols) {
         int[][][] traceBackMatrix = new int[numberOfRows][numberOfCols][2];
 
         traceBackMatrix[0][0] = new int[]{0, 0};
@@ -220,7 +220,7 @@ public class EditTranscript {
      * @param numberOfCols length of sequence2 + 1
      * @return initialized matrix
      */
-    private static char[][] initializeTypeMatrix(int numberOfRows, int numberOfCols) {
+    public static char[][] initializeTypeMatrix(int numberOfRows, int numberOfCols) {
         char[][] initializedMatrix = new char[numberOfRows][numberOfCols];
 
         // initialize first row from cell by cell starting with 0, incrementing by 1
@@ -234,7 +234,7 @@ public class EditTranscript {
         return initializedMatrix; 
     }
 
-    private static String[][] initializeArrowMatrix(int numberOfRows, int numberOfCols) {
+    public static String[][] initializeArrowMatrix(int numberOfRows, int numberOfCols) {
         String[][] initializedMatrix = new String[numberOfRows][numberOfCols];
 
         // initialize first row from cell by cell starting with 0, incrementing by 1
@@ -256,7 +256,7 @@ public class EditTranscript {
      * @param delta_i_j either 0 if char at i of seq1 and j of seq2 are identical else 1
      * @return the direction from which the edit distance is continued
      */
-    private static tracebackDirection getTraceback(int[][] scoreMatrix, int current_i, int current_j, int delta_i_j) {
+    public static tracebackDirection getTraceback(int[][] scoreMatrix, int current_i, int current_j, int delta_i_j) {
         int scoreAbove = scoreMatrix[current_i - 1][current_j] + 1;
         int scoreLeft = scoreMatrix[current_i][current_j - 1] + 1;
         int scoreDiagonal = scoreMatrix[current_i - 1][current_j - 1] + delta_i_j;
@@ -293,7 +293,7 @@ public class EditTranscript {
      * @param current_j current index j
      * @return the coordinates [i ,j] from which the edit distance was continued
      */
-    private static int[] computeTracebackCoordinate(tracebackDirection direction, int current_i, int current_j) {
+    public static int[] computeTracebackCoordinate(tracebackDirection direction, int current_i, int current_j) {
         int[] tracebackCoordinate = new int[2];
 
         switch (direction) {
@@ -328,7 +328,7 @@ public class EditTranscript {
      * @param direction the direction from which the edit distance should be computed
      * @return editDistance at position i, j
      */
-    private static int computeScoreOfPrefix(int[][] scoreMatrix, int current_i, int current_j, tracebackDirection direction) {
+    public static int computeScoreOfPrefix(int[][] scoreMatrix, int current_i, int current_j, tracebackDirection direction) {
         int editDistance;
         if (direction.isAbove()) editDistance = scoreMatrix[current_i - 1][current_j] + 1;
         else if (direction.isLeft()) editDistance = scoreMatrix[current_i][current_j - 1] + 1;
